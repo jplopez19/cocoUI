@@ -4,6 +4,11 @@ import pyodbc
 import openai
 import streamlit.components.v1 as components
 
+os. environ ["'OPENAI_API_TYPE"] = "azure"
+# os. environ["OPENAI_API_VERSION" ] = "2023-07-01-preview"
+os.environ ["OPENAI_API_VERSION"] = "2023-05-15"
+os.environ ["OPENAI_API_BASE"] = "https://coco-azure-gpt.openai.azure.com/"
+os. environ ["OPENAI_API_KEY"] = "cad611acc0464f629b8a3c451d7655aa"
 
 def init_connection():
     return pyodbc.connect(

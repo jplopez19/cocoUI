@@ -104,7 +104,7 @@ st.set_page_config(
 )
 
 def main():
-    st.markdown(
+    down(
         """
         <style>
             .chat-box {
@@ -128,7 +128,7 @@ def main():
             .feedback-icon {
                 border: 1px solid #000;
                 padding: 2px;
-                border-radius: 5px;
+            st.mark    border-radius: 5px;
                 cursor: pointer;
                 margin-right: 5px;
                 display: inline-block;

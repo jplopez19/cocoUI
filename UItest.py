@@ -4,11 +4,6 @@ import pyodbc
 import openai
 import streamlit.components.v1 as components
 
-os. environ ["'OPENAI_API_TYPE"] = "azure"
-# os. environ["OPENAI_API_VERSION" ] = "2023-07-01-preview"
-os.environ ["OPENAI_API_VERSION"] = "2023-05-15"
-os.environ ["OPENAI_API_BASE"] = "https://coco-azure-gpt.openai.azure.com/"
-os. environ ["OPENAI_API_KEY"] = "cad611acc0464f629b8a3c451d7655aa"
 
 def init_connection():
     return pyodbc.connect(
@@ -109,64 +104,65 @@ st.set_page_config(
 )
 
 def main():
-    down(
-        """
-        <style>
-            .chat-box {
-                max-height: 450px;
-                overflow-y: auto;
-                border: 1px solid #ECEFF1;
-                border-radius: 5px;
-                padding: 10px;
-                background-color: whitesmoke;
-            }
-            .chat-message {
-                margin-bottom: 15px;
-            }
-            .user-message {
-                color: blue;
-                margin-left: 10px;
-            }
-            .bot-message {
-                color: purple;
-            }
-            .feedback-icon {
-                border: 1px solid #000;
-                padding: 2px;
-            st.mark    border-radius: 5px;
-                cursor: pointer;
-                margin-right: 5px;
-                display: inline-block;
-            }
-            .feedback-container {
-                margin-top: 5px;
-            }
-            .bot-message.latest-response {
-                background-color: #F5F5F5; /* Even lighter shade of grey */
-                border-radius: 5px;
-                padding: 5px;
-                margin: 5px 0;
-                color: black;
-                font-weight: bold;
-            }
-            .instruction-box {
-                border: 1px solid #ECEFF1;
-                border-radius: 5px;
-                padding: 10px;
-                margin-bottom: 20px;
-                background-color: silver;
-                color: #333;
-            }
-            h1, h2, h3, h4, h5, h6 {
-                color: #000;
-            }
-          .css-2trqyj {
-                color: whitesmoke;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+# Enhanced CSS for better UI consistency and responsiveness
+st.markdown(
+    """
+    <style>
+        .chat-box {
+            max-height: 450px;
+            overflow-y: auto;
+            border: 1px solid #ECEFF1;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: whitesmoke;
+        }
+        .chat-message {
+            margin-bottom: 15px;
+        }
+        .user-message {
+            color: #0056b3; /* Changed to a standard blue color */
+            margin-left: 10px;
+        }
+        .bot-message {
+            color: #800080; /* Changed to a standard purple color */
+        }
+        .feedback-icon {
+            border: 1px solid #000;
+            padding: 2px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        .feedback-container {
+            margin-top: 5px;
+        }
+        .bot-message.latest-response {
+            background-color: #F5F5F5; 
+            border-radius: 5px;
+            padding: 5px;
+            margin: 5px 0;
+            color: black;
+            font-weight: bold;
+        }
+        .instruction-box {
+            border: 1px solid #ECEFF1;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: silver;
+            color: #333;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #000;
+        }
+        .css-2trqyj {
+            color: whitesmoke;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
     
     st.markdown(
         """
@@ -184,10 +180,17 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # Sidebar for Authentication and Title
-    with st.sidebar:
-        st.title("Authorization")
-        auth_token = st.text_input("Enter Authentication Token:")
+# Sidebar for Authentication and Title
+with st.sidebar:
+    st.title("Authorization")
+
+    # Authentication token input with a tooltip for guidance
+    auth_token = st.text_input("Enter Authentication Token:",
+                               help="Enter the token provided to you for authentication.")
+
+    # User ID input with a tooltip for guidance
+    user_id = st.text_input("Enter your ID Number:",
+                            help="Enter your unique ID number to start the conversation.")
     
     # Initialize conversation history and feedback if they don't exist
     if 'conversation_history' not in st.session_state:
@@ -304,30 +307,35 @@ def main():
             #         }
             #     </script>
             # """ % user_id, unsafe_allow_html=True)
-                            
-            if st.button('Submit') and user_input.strip():    
-                try:
-                    completion = openai.ChatCompletion.create(
-                        engine="CocoGPT_2",
-                        messages=[
-                            {"role": "system", "content": SYSTEM_MESSAGE},
-                            {"role": "user", "content": user_input}         
-                        ]
-                    )
-                    generated_text = completion.choices[0].message.content
-                   # Append the new exchange to the conversation history
-                    st.session_state.conversation_history.append({"user": user_input, "chatbot": generated_text})
-                    
-                    # After sending a message and receiving a response, record the user input and bot response in the database.
-                    if user_input and generated_text:  # Ensure there's a message to record
-                        try:
-                            store_exchange(user_id, user_input, generated_text)  # feedback and explanation are None by default
-                            # Change the key to reset the text_input
-                            new_key_value = int(st.session_state.input_key.split('_')[-1]) + 1
-                            st.session_state.input_key = f'user_input_key_{new_key_value}'
-                            st.experimental_rerun()
-                        except Exception as e:
-                            st.error(f"Failed to store exchange: {e}")
+
+# Remove the 'if st.button('Submit') and user_input.strip():' block
+# And directly check for user input and process it
+if user_input.strip():  # Check if there is user input
+    try:
+        completion = openai.ChatCompletion.create(
+            engine="CocoGPT_2",
+            messages=[
+                {"role": "system", "content": SYSTEM_MESSAGE},
+                {"role": "user", "content": user_input}         
+            ]
+        )
+        generated_text = completion.choices[0].message.content
+
+        # Append the new exchange to the conversation history
+        st.session_state.conversation_history.append({"user": user_input, "chatbot": generated_text})
+        
+        # After sending a message and receiving a response, record the user input and bot response in the database.
+        if generated_text:  # Ensure there's a bot response to record
+            try:
+                store_exchange(user_id, user_input, generated_text)
+                # Change the key to reset the text_input
+                new_key_value = int(st.session_state.input_key.split('_')[-1]) + 1
+                st.session_state.input_key = f'user_input_key_{new_key_value}'
+                st.experimental_rerun()
+            except Exception as e:
+                st.error(f"Failed to store exchange: {e}")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
                             
                 except Exception as e:
                     st.write(f"An error occurred: {e} 😢")                              
